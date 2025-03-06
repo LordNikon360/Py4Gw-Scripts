@@ -1,0 +1,3 @@
+[submodule "Py4GW"]
+	path = Py4GW
+	url = https://github.com/apoguita/Py4GW.git
