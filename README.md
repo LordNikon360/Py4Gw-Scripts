@@ -5,6 +5,12 @@ This python package is meant for use with the PY4GW library to support the creat
 
 These scripts provide utilities for identifying, salvaging, cleaning inventory, automation and other fun things.
 
-Launch the PY4GW library launcher, then choose a script to run to see intended function.
+Cloning this library will also clone the PY4GW library.
+
+Launch the PY4GW launcher or inject the PY4GW.dll with any python injector.
+
+Once Guildwars is launched and PY4GW is injected, select the folder icon on the console window.
+
+Select the script to load, and hit the Play button.
 
 *Use at your own risk, these functions are certainly trackable by the game developers!
