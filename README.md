@@ -9,7 +9,7 @@ Cloning this library will also clone the PY4GW library.
 
 Launch the Py4GW launcher or inject the Py4GW.dll with any python injector.
 
-Once Guildwars is launched and PY4GW is injected, select the folder icon on the console window.
+Once Guildwars is launched and Py4GW is injected, select the folder icon on the console window.
 
 Select the script to load, and hit the Play button.
 
