@@ -5,7 +5,7 @@ This python package is meant for use with the Py4GW library to support the creat
 
 These scripts provide utilities for identifying, salvaging, cleaning inventory, automation and other fun things.
 
-Cloning this library will also clone the PY4GW library.
+Cloning this library will also clone the Py4GW library.
 
 Launch the Py4GW launcher or inject the Py4GW.dll with any python injector.
 
