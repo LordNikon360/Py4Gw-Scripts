@@ -199,6 +199,30 @@ def IsEnemyInFront (agent_id) -> bool:  # code originally taken from vaettir bot
         return True
     return False
 
+def IsEnemyBehind(agent_id) -> bool:
+    player_agent_id = Player.GetAgentID()
+    player_x, player_y = Agent.GetXY(player_agent_id)
+    player_angle = Agent.GetRotationAngle(player_agent_id)  # Player's facing direction
+    nearest_enemy = agent_id
+    #if target is None:
+    Player.ChangeTarget(nearest_enemy)
+    #target = nearest_enemy
+    nearest_enemy_x, nearest_enemy_y = Agent.GetXY(nearest_enemy)                
+
+    # Calculate the angle between the player and the enemy
+    dx = nearest_enemy_x - player_x
+    dy = nearest_enemy_y - player_y
+    angle_to_enemy = math.atan2(dy, dx)  # Angle in radians
+    angle_to_enemy = math.degrees(angle_to_enemy)  # Convert to degrees
+    angle_to_enemy = (angle_to_enemy + 360) % 360  # Normalize to [0, 360]
+
+    # Calculate the relative angle to the enemy
+    angle_diff = (angle_to_enemy - player_angle + 360) % 360
+
+    if angle_diff > 90 and angle_diff < 270:
+        return True
+    return False
+
 ### --- HEROES --- ###
 # Check if hero in party
 def IsHeroInParty(id: int) -> bool:
@@ -373,6 +397,8 @@ class SalvageFsm(FSM):
     current_salvage = 0
     current_quantity = 0
     current_ping = 0
+    default_base_ping = 100
+    default_base_wait_no_ping = 500
     confirmed = False
     pending_stop = False
     salvage_kit = False
@@ -659,6 +685,8 @@ class InventoryFsm(FSM):
     gold_char_snapshot = 0
     gold_storage_snapshot = 0
     sell_item_count = -1
+    default_wait_no_ping = 500
+    default_wait_ping = 100
 
     inventory_setup_salv = "Update Salvage List"
     inventory_handle_gold = "Manage Money"
@@ -762,7 +790,7 @@ class InventoryFsm(FSM):
     
         self.AddSubroutine(name=self.inventory_salv_items,
             sub_fsm = self.salvager,
-            condition_fn=lambda: not self.salvager.IsFinishedSalvage())
+            condition_fn=lambda: self.salvageItems and not self.salvager.IsFinishedSalvage())
                 
         self.AddState(name=self.inventory_sell_items,
             execute_fn=lambda: self.ExecuteStep(self.inventory_sell_items, self.SellItems()),
@@ -861,7 +889,7 @@ class InventoryFsm(FSM):
         if not self.action_timer.IsRunning():
             self.action_timer.Start()
         
-        if not self.action_timer.HasElapsed(250):
+        if not self.action_timer.HasElapsed(self.GetCurrentPing()):
             return
             
         self.action_timer.Reset()
@@ -930,7 +958,7 @@ class InventoryFsm(FSM):
         if not self.action_timer.IsRunning():
             self.action_timer.Start()
 
-        if not self.action_timer.HasElapsed(250):
+        if not self.action_timer.HasElapsed(self.GetCurrentPing()):
             return
         
         self.action_timer.Reset()
@@ -968,7 +996,7 @@ class InventoryFsm(FSM):
         if not self.action_timer.IsRunning():
             self.action_timer.Start()
 
-        if not self.action_timer.HasElapsed(250):
+        if not self.action_timer.HasElapsed(self.GetCurrentPing()):
             return
         
         self.action_timer.Reset()
@@ -1005,7 +1033,7 @@ class InventoryFsm(FSM):
         if not self.action_timer.IsRunning():
             self.action_timer.Start()
 
-        if not self.action_timer.HasElapsed(250):
+        if not self.action_timer.HasElapsed(self.GetCurrentPing()):
             return
         
         self.action_timer.Reset()
@@ -1051,7 +1079,7 @@ class InventoryFsm(FSM):
         if not self.action_timer.IsRunning():
             self.action_timer.Start()
 
-        if not self.action_timer.HasElapsed(250):
+        if not self.action_timer.HasElapsed(self.GetCurrentPing()):
             return
         
         self.action_timer.Reset()
@@ -1078,7 +1106,7 @@ class InventoryFsm(FSM):
         if not self.stop_action_timer.IsRunning():
             self.stop_action_timer.Start()
 
-        if not self.stop_action_timer.HasElapsed(250):
+        if not self.stop_action_timer.HasElapsed(self.GetCurrentPing()):
             return
                 
         self.stop_action_timer.Reset()
@@ -1107,7 +1135,7 @@ class InventoryFsm(FSM):
         if not self.action_timer.IsRunning():
             self.action_timer.Start()
 
-        if not self.action_timer.HasElapsed(100):
+        if not self.action_timer.HasElapsed(self.GetCurrentPing()):
             return
                 
         self.action_timer.Reset()
@@ -1130,13 +1158,14 @@ class InventoryFsm(FSM):
         if not self.stop_action_timer.IsRunning():
             self.stop_action_timer.Start()
 
-        if self.stop_action_timer.HasElapsed(250):
+        if self.stop_action_timer.HasElapsed(self.GetCurrentPing()):
             self.stop_action_timer.Reset()
 
             unidentified_items = self.FilterItemsToId()
 
             if len(unidentified_items) == 0:
                 self.stop_action_timer.Stop()
+                self.current_ping = 0
                 return True
             
         return False
@@ -1148,6 +1177,12 @@ class InventoryFsm(FSM):
         unidentified_items = ItemArray.Filter.ByCondition(unidentified_items, lambda item_id: Item.Rarity.IsWhite(item_id) == False)
 
         return unidentified_items
+
+    def GetCurrentPing(self):
+            if self.ping_handler:
+                return self.default_wait_ping + self.ping_handler.GetMaxPing() * 2
+            else:
+                return self.default_wait_no_ping
 
     def Reset(self):
         if self.get_state_count() > 0:
@@ -1376,4 +1411,3 @@ def GetInventoryItemSlots(bags=None):
             Py4GW.Console.Log("Utilities", f"GetInventoryItemSlots: {str(e)}", Py4GW.Console.MessageType.Error)
 
     return all_item_ids
-
