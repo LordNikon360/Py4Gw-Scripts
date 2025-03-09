@@ -177,7 +177,7 @@ class Soup_Farm(ReportsProgress):
 
     soup_Skillbar_Code = "Ogek8Np5Kzmk513GBWzlqIuz+F7F"
 
-    soup_exchange_travel = "Soup- Exchange Travel Kamadan"
+    soup_exchange_travel = "Soup- Exchange Travel Astralarium"
     soup_exchange_wait_map = "Soup- Exchange Waiting Map"
     soup_exchange_move_to_collector = "Soup- Exchange Go to Chef"
     soup_exchange_target_collector = "Soup- Exchange Target"
@@ -208,6 +208,7 @@ class Soup_Farm(ReportsProgress):
     soup_inventory_state_name = "Soup- Handle Inventory"
     soup_inventory_state_name_end = "Soup-Handle Inventory#2"
     soup_end_state_name = "Soup- End Routine"
+    soup_forced_stop = "Soup- End Forced"
     soup_outpost_portal = [(-3102, 1070)] # Used by itself if spawn close to Floodplain portal
     #soup_outpost_pathing = [(-15480, 11138), (-16009, 10219), (-15022, 8470)] # Used when spawn location is near xunlai chest or merchant
     soup_farm_run_pathing = [(-14512, 8238), (-12469, 9387), (-12243, 10163), (-10703, 10952), (-10066, 11265), (-9595, 11343), (-8922, 11625), (-8501, 11756)]
@@ -284,6 +285,7 @@ class Soup_Farm(ReportsProgress):
                                              self.soup_merchant_position, self.current_inventory, 
                                              self.keep_list, goldToKeep=5000, logFunc=self.Log)
         
+        # Skalefin Exchange Sub Routine
         self.soup_Exchange_Routine.AddState(self.soup_exchange_travel,
                                              execute_fn=lambda: self.ExecuteStep(self.soup_exchange_travel, Routines.Transition.TravelToOutpost(Mapping.Astralarium)),
                                              exit_condition=lambda: Routines.Transition.HasArrivedToOutpost(Mapping.Astralarium),
@@ -305,10 +307,12 @@ class Soup_Farm(ReportsProgress):
                                              execute_fn=lambda: self.ExecuteStep(self.soup_exchange_do_exchange_all, self.ExchangeSoups()),
                                              exit_condition=lambda: self.ExchangeSoupsDone(), 
                                              run_once=False)
+        # Skalefin Exchange Sub Routine
         
+        # Soup Farm Main Routine
         self.soup_Routine.AddSubroutine(self.soup_exchange_soup_routine_start,
-                                         sub_fsm=self.soup_Exchange_Routine,
-                                         condition_fn=lambda: self.CheckExchangeSoups() and CheckIfInventoryHasItem(Items.Drake_Flesh))        
+                       sub_fsm=self.soup_Exchange_Routine,
+                       condition_fn=lambda: self.CheckExchangeSoups() and CheckIfInventoryHasItem(Items.Drake_Flesh))        
         self.soup_Routine.AddState(self.soup_travel_state_name,
                        execute_fn=lambda: self.ExecuteStep(self.soup_travel_state_name, Routines.Transition.TravelToOutpost(Mapping.Jokanur_Diggings)),
                        exit_condition=lambda: Routines.Transition.HasArrivedToOutpost(Mapping.Jokanur_Diggings),
@@ -337,9 +341,8 @@ class Soup_Farm(ReportsProgress):
                        condition_fn=lambda: not self.soup_first_after_reset and Inventory.GetFreeSlotCount() <= self.default_min_slots)        
         self.soup_Routine.AddState(self.soup_check_inventory_after_handle_inventory, execute_fn=lambda: self.CheckInventory())
         self.soup_Routine.AddState(self.soup_change_weapon_staff,
-                                    execute_fn=lambda: self.ExecuteStep(self.soup_change_weapon_staff, ChangeWeaponSet(self.weapon_slot_staff)),
-                                    #exit_condition=lambda: CheckWeaponEquipped("Staff", self.Log),
-                                    transition_delay_ms=1000)
+                       execute_fn=lambda: self.ExecuteStep(self.soup_change_weapon_staff, ChangeWeaponSet(self.weapon_slot_staff)),
+                       transition_delay_ms=1000)
         self.soup_Routine.AddState(self.soup_pathing_2_state_name,
                        execute_fn=lambda: self.ExecuteStep(self.soup_pathing_2_state_name, Routines.Movement.FollowPath(self.soup_pathing_portal_only_handler_2, self.movement_Handler)),
                        exit_condition=lambda: Routines.Movement.IsFollowPathFinished(self.soup_pathing_portal_only_handler_2, self.movement_Handler) or Map.GetMapID() == Mapping.Fahranur_First_City,
@@ -352,9 +355,8 @@ class Soup_Farm(ReportsProgress):
                        exit_condition=lambda: self.RunToDrakesDone(),
                        run_once=False)
         self.soup_Routine.AddState(self.soup_change_weapon_scythe,
-                            execute_fn=lambda: self.ExecuteStep(self.soup_change_weapon_scythe, ChangeWeaponSet(self.weapon_slot_scythe)),
-                            #exit_condition=lambda: CheckWeaponEquipped("Scythe", self.Log),
-                            transition_delay_ms=1000)
+                       execute_fn=lambda: self.ExecuteStep(self.soup_change_weapon_scythe, ChangeWeaponSet(self.weapon_slot_scythe)),
+                       transition_delay_ms=1000)
         self.soup_Routine.AddState(self.soup_waiting_kill_state_name,
                        execute_fn=lambda: self.ExecuteTimedStep(self.soup_waiting_kill_state_name, self.KillLoopStart()),
                        exit_condition=lambda: self.KillLoopComplete() or self.ShouldForceTransitionStep(),
@@ -377,8 +379,10 @@ class Soup_Farm(ReportsProgress):
         self.soup_Routine.AddSubroutine(self.soup_inventory_state_name_end,
                        sub_fsm = self.inventoryRoutine)       
         self.soup_Routine.AddSubroutine(self.soup_exchange_soup_routine_end,
-                                         condition_fn=lambda: self.CheckExchangeSoups() and CheckIfInventoryHasItem(Items.Drake_Flesh))
-
+                       condition_fn=lambda: self.CheckExchangeSoups() and CheckIfInventoryHasItem(Items.Drake_Flesh))
+        self.soup_Routine.AddState(self.soup_forced_stop,                                    
+                       execute_fn=lambda: self.ExecuteStep(self.soup_forced_stop, None))
+        
         self.RunTimer = Timer()
         self.TotalTimer = Timer()
 
