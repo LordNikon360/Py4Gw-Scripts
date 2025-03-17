@@ -60,20 +60,22 @@ PeppermintCandyCane = 6370
 RainbowCandyCane = 21489
 Honeycomb = 26784
 WintersdayGift = 21491
-SpikedEggnog = 6366
 Yuletide = 21490
 CandyCaneShards = 556
 
 ### --- Halloween --- ###
-CandyApple = 28431
 GhostInBox = 6368
 VialAbsinthe = 6367
 SquashSerum = 6369
 Eggnog = 6375
+SpikedEggnog = 6366
+CandyApple = 28431
 CandyCorn = 28432
 PumpkinCookies = 28433
 TrickOrTreatBags = 28434
 PumpkinPie = 28436
+
+Items_Halloween = [CandyApple, GhostInBox, VialAbsinthe, SquashSerum, Eggnog, SpikedEggnog, CandyCorn, PumpkinCookies, PumpkinPie, TrickOrTreatBags]
 
 ### --- Chinese New Year --- ###
 LunarTokens = 21833
@@ -84,4 +86,9 @@ LunarFortune_Monkey = 29433
 LunarFortune_Rooster = 29434
 
 EventItems_Array = [(Lock_Pick), (Cupcake), (ShamrockAle), (FourLeafClover),  (BottlesGrog),  (LunarFortune_Monkey), (BlueSugarDrink), (WintergreenCandyCane), (VictoryToken), (SnowmanSummons), (GhostInBox), (VialAbsinthe), (SquashSerum), (Eggnog), (CandyCorn), (PumpkinCookies), (TrickOrTreatBags), (Fruitcake), (PeppermintCandyCane), (RainbowCandyCane), (Honeycomb), (WintersdayGift), (SpikedEggnog), (Yuletide), (LunarTokens), (CandyCaneShards), (CandyApple), (GoldenEgg), (PumpkinPie)]
-IdSalveItems_Array = [(Salve_Kit_Basic), (Salve_Kit_Advanced), (Salve_Kit_Superior), (Id_Kit_Basic), (Id_Kit_Superior)]
+IdKits = [Id_Kit_Basic, Id_Kit_Superior]
+SalveKits = [Salve_Kit_Basic, Salve_Kit_Advanced, Salve_Kit_Superior]
+
+IdSalveItems_Array = []
+IdSalveItems_Array.extend(IdKits)
+IdSalveItems_Array.extend(SalveKits)
