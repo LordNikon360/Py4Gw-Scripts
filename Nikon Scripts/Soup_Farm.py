@@ -17,6 +17,7 @@ class Soup_Window(BasicWindow):
     
     soup_original_size = [350.0, 400.0]
     soup_explanded_size = [350.0, 475.0]
+    minimum_slots = 5
 
     def __init__(self, window_name="Basic Window", window_size = [350.0, 470.0], show_logger = True, show_state = True):
         super().__init__(window_name, window_size, show_logger, show_state)
@@ -98,7 +99,7 @@ class Soup_Window(BasicWindow):
             if PyImGui.begin_table("Run_Times", 2):
                 PyImGui.table_next_row()
                 PyImGui.table_next_column()
-                PyImGui.text(f"Last Run:")
+                PyImGui.text(f"Current:")
                 PyImGui.table_next_column()
                 PyImGui.text(f"     {FormatTime(GetRunTime(), "mm:ss:ms")}")
                 PyImGui.table_next_row()
@@ -284,6 +285,7 @@ class Soup_Farm(ReportsProgress):
     current_loot_tries = 0
     current_run_time = 0
     average_run_time = 0
+    default_min_slots = 5
     average_run_history = []
     
     soup_runs = 0
@@ -982,7 +984,8 @@ class Soup_Farm(ReportsProgress):
                    
                         if self.current_loot_tries > 5:
                             self.current_lootable = 0
-                        return
+                        else:
+                            return
                 
                 self.current_lootable = 0
                 self.current_loot_tries = 0
