@@ -680,22 +680,26 @@ class Soup_Farm(ReportsProgress):
         self.soup_exchange_timer.Reset()
 
         try:
-            turn_in = GetItemIdFromModelId(Items.Skalefin)
+            turn_in = GetItemIdFromModelId(Items.Skalefin, 2)
+            count = GetModelIdCount(Items.Skalefin)
 
-            if turn_in == 0:
+            if turn_in == 0 or count < 2:
                 return
             
             items3 = self.pyMerchant.get_merchant_item_list()                
             if items3:
                 for item in items3:
                     if Item.GetModelID(item) == Items.Skalefin_Soup:
-                        self.pyMerchant.collector_buy_item(item, 0, [turn_in], [2])
+                        buy = [2]
+                        if len(turn_in) > 1:
+                            buy = [1, 1]
+                        self.pyMerchant.collector_buy_item(item, 0, turn_in, buy)
 
         except Exception as e:
             self.Log(f"Error in Exchanging soup: {str(e)}", Py4GW.Console.MessageType.Error)
 
     def ExchangeSoupsDone(self):
-        return not CheckIfInventoryHasItem(Items.Skalefin)
+        return not CheckIfInventoryHasItem(Items.Skalefin, 2)
         
     def CheckInventory(self):
         if Inventory.GetFreeSlotCount() <= self.default_min_slots:
