@@ -556,16 +556,6 @@ class Soup_Farm(ReportsProgress):
         self.TotalTimer.Stop()
         self.RunTimer.Stop()
 
-    # def PrintData(self):
-    #     if self.current_inventory != None:
-    #         totalSlotsFull = 0
-    #         for (bag, slots) in self.current_inventory:
-    #             if isinstance(slots, list):
-    #                 totalSlotsFull += len(slots)
-    #                 for slot in slots:
-    #                     self.Log(f"Bag: {bag}, Slot: {slot}")
-    #         self.Log(f"Total Slots Full: {totalSlotsFull}")
-
     def Reset(self):     
         if self.soup_Routine:
             self.InternalStop()
@@ -977,18 +967,13 @@ class Soup_Farm(ReportsProgress):
 
                     if test != 0:
                         self.current_loot_tries += 1
-
-                        if (self.current_loot_tries == 5):
-                            self.Log("This loot is 50 meters away or im blind")
                    
-                        if self.current_loot_tries > 10:
+                        if self.current_loot_tries > 5:
                             self.current_lootable = 0
-                            self.current_loot_tries = 0
-                            self.Log("I still can't find it, moving on.")
-                        return  
-                    else:
-                        self.current_lootable = 0
+                        return
                 
+                self.current_lootable = 0
+                self.current_loot_tries = 0
                 item = self.GetNearestPickupItem()
 
                 if item == 0 or item == None:
