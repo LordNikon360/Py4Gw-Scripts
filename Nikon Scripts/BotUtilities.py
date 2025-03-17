@@ -448,8 +448,8 @@ class ReportsProgress():
         self.deposit_mats = depo_mats
 
     def GetMinimumSlots(self) -> int:
-        return self.default_min_slots    
-    
+        return self.default_min_slots
+      
 ### --- REPORTS PROGRESS --- ###
 
 ### --- SALVAGE ROUTINE --- ###
