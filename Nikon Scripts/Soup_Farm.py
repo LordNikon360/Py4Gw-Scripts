@@ -11,7 +11,6 @@ soup_selected = True
 soup_exchange = False
 soup_input = 250
 
-
 class Soup_Window(BasicWindow):
     global soup_selected, soup_input, soup_exchange
     
@@ -29,7 +28,7 @@ class Soup_Window(BasicWindow):
     def ShowMainControls(self):
         if PyImGui.collapsing_header("About - Farm Requirements"):
             PyImGui.begin_child("About_child_window", (0, 235), False, 0)
-            PyImGui.text("- Dervish/Any or Any/Dervish")
+            PyImGui.text("- Dervish/Assassin - working on D/Any or Any/D variants")
             PyImGui.text("- Suggest Zealous Enchanting Scythe.")
             PyImGui.text("  \t*Droknars Reaper is perfect.")
             PyImGui.text("- Equip Scythe in Slot 2.")
@@ -121,7 +120,6 @@ class Soup_Window(BasicWindow):
                 PyImGui.text(f"{FormatTime(GetTotalRunTime())}")
                 PyImGui.table_next_row()
                 PyImGui.end_table()
-
         PyImGui.separator()
 
     def ShowBotControls(self):
@@ -142,8 +140,7 @@ class Soup_Window(BasicWindow):
 
             PyImGui.table_next_column()            
             if PyImGui.button("Print Saved Slots"):
-                PrintData()  
-
+                PrintData()
             PyImGui.end_table() 
     
     def ApplyAndUpdateSettings(self):
@@ -169,7 +166,6 @@ class Soup_Window(BasicWindow):
     def ApplyInventorySettings(self) -> None:
         ApplySoupInventorySettings(self.minimum_slots, self.minimum_gold, self.depo_items, self.depo_mats)
 
-
     def GetSoupSettings(self):
         global soup_input
 
@@ -182,18 +178,24 @@ class Soup_Farm(ReportsProgress):
     class Soup_Skillbar:    
         def __init__(self):
             self.sand_shards = SkillBar.GetSkillIDBySlot(1)
+            self.sand_shards_slot = 1
             self.vos = SkillBar.GetSkillIDBySlot(2)
+            self.vos_slot = 2
             self.staggering = SkillBar.GetSkillIDBySlot(3)
+            self.staggering_slot = 3
             self.eremites = SkillBar.GetSkillIDBySlot(4)
+            self.eremites_slot = 4
             self.drunkMaster = SkillBar.GetSkillIDBySlot(7)
+            self.drunkMaster_slot = 7
             self.regen = SkillBar.GetSkillIDBySlot(8)
+            self.regen_slot = 8
 
     # soup_Routine is the FSM instance
     soup_Routine = FSM("soup_Main")
     soup_Exchange_Routine = FSM("soup_Exchange")
     inventoryRoutine = InventoryFsm(None, None, 0, None, None)
 
-    soup_primary_dervish_skillbar_code = "Ogek8Np5Kzmk513m2VzFAAAgqI7F" #DASH VARIANT "Ogek8Np5Kzmj59brdbuAAAwEk9C" ABOUT THE SAME SPEED AS DRUNKEN AT 15%#
+    soup_primary_dervish_skillbar_code = "Ogek8Np5Kzmk513m2VzFAAAgqI7F" #"Ogek8Np5Kzmj59brdbuAAAwEk9C" #DASH VARIANT ABOUT THE SAME SPEED AS DRUNKEN AT 15%#
 
     soup_exchange_travel = "Soup- Exchange Travel Astralarium"
     soup_exchange_wait_map = "Soup- Exchange Waiting Map"
@@ -201,8 +203,8 @@ class Soup_Farm(ReportsProgress):
     soup_exchange_target_collector = "Soup- Exchange Target"
     soup_exchange_interact_collector = "Soup- Exchange Interact"
     soup_exchange_do_exchange_all = "Soup- Exchange Soup"
-    soup_exchange_soup_routine_start = "Soup- Go Exchange Soup#1"
-    soup_exchange_soup_routine_end = "Soup- Go Exchange Soup#2"
+    soup_exchange_soup_routine_start = "Soup- Go Exchange Soup 1"
+    soup_exchange_soup_routine_end = "Soup- Go Exchange Soup 2"
     
     soup_start_farm = "Soup- Check Farm"
     soup_inventory_routine = "DoInventoryRoutine"
@@ -245,8 +247,8 @@ class Soup_Farm(ReportsProgress):
     soup_run_success = "Soup- Success Run"
     soup_resign_state_name = "Soup- Resigning"
     soup_wait_return_state_name = "Soup- Wait Return"
-    soup_inventory_state_name = "Soup- Handle Inventory"
-    soup_inventory_state_name_end = "Soup-Handle Inventory#2"
+    soup_inventory_state_name = "Soup- Handle Inventory 1"
+    soup_inventory_state_name_end = "Soup-Handle Inventory 2"
     soup_end_state_name = "Soup- End Routine"
     soup_forced_stop = "Soup- End Forced"
     soup_outpost_portal = [(-92, -72), (-1599, -1007), (-2900, -1090)]
@@ -294,7 +296,6 @@ class Soup_Farm(ReportsProgress):
     soup_killing_eremites_casted = False
     soup_exchange = False
 
-    player_stuck = False
     player_stuck_hos_count = 0
     player_skillbar_load_count = 0
     player_previous_hp = 100
@@ -334,7 +335,6 @@ class Soup_Farm(ReportsProgress):
         self.current_inventory = GetInventoryItemSlots()
 
         super().__init__(window, Mapping.Jokanur_Diggings, self.soup_merchant_position, self.current_inventory, self.keep_list)
-        self.skillBar = self.Soup_Skillbar()
         
         # Skalefin Exchange Sub Routine
         self.soup_Exchange_Routine.AddState(self.soup_exchange_travel,
@@ -779,6 +779,7 @@ class Soup_Farm(ReportsProgress):
                     self.InternalStop()
                 return False
         
+        self.skillBar = self.Soup_Skillbar()
         return True
 
     # This function is executed for each run to skales
@@ -798,7 +799,7 @@ class Soup_Farm(ReportsProgress):
                 return
             
             if not HasBuff(player_id, self.skillBar.drunkMaster):
-                CastSkillById(self.skillBar.drunkMaster)
+                CastSkillByIdAndSlot(self.skillBar.drunkMaster, self.skillBar.drunkMaster_slot)
                 
             # Run the stay alive script.
             self.StayAliveLoop()
@@ -876,12 +877,11 @@ class Soup_Farm(ReportsProgress):
                         shards_time_remain = buff.time_remaining
 
                 if hp < dangerHp and regen_time_remain < 3000 and HasEnoughEnergy(self.skillBar.regen) and IsSkillReadyById(self.skillBar.regen):
-                    CastSkillById(self.skillBar.regen)
+                    CastSkillByIdAndSlot(self.skillBar.regen, self.skillBar.regen_slot)
                     return
                
                 if shards_time_remain < 4000 and IsSkillReadyById(self.skillBar.sand_shards) and HasEnoughEnergy(self.skillBar.sand_shards) and len(enemies) > 1:
-                    CastSkillById(self.skillBar.sand_shards)
-                    return True                         
+                    CastSkillByIdAndSlot(self.skillBar.sand_shards, self.skillBar.sand_shards_slot)
         except Exception as e:
             Py4GW.Console.Log("StayAlive", str(e), Py4GW.Console.MessageType.Error)
 
@@ -925,7 +925,7 @@ class Soup_Farm(ReportsProgress):
                         
                     if self.soup_killing_staggering_casted and IsSkillReadyById(self.skillBar.eremites) and HasEnoughEnergy(self.skillBar.eremites):  
                         self.soup_killing_staggering_casted = False
-                        CastSkillById(self.skillBar.eremites)
+                        CastSkillByIdAndSlot(self.skillBar.eremites, self.skillBar.eremites_slot)
                         return                    
                     
                     vos_time_remain = 0
@@ -941,20 +941,20 @@ class Soup_Farm(ReportsProgress):
                             shards_time_remain = buff.time_remaining
 
                     if not self.soup_killing_staggering_casted and shards_time_remain < 4000 and IsSkillReadyById(self.skillBar.sand_shards) and HasEnoughEnergy(self.skillBar.sand_shards) and len(enemies) > 1:
-                        CastSkillById(self.skillBar.sand_shards)
+                        CastSkillByIdAndSlot(self.skillBar.sand_shards, self.skillBar.sand_shards_slot)
                         return
                                             
                     # Get Ready for killing
                     # Need find a way to change weapon set since  sending the change keys is not working for F1-F4
                     # For now assume we're good to go.
                     if not self.soup_killing_staggering_casted and vos_time_remain < 3000 and IsSkillReadyById(self.skillBar.vos) and HasEnoughEnergy(self.skillBar.vos):                        
-                        CastSkillById(self.skillBar.vos)
+                        CastSkillByIdAndSlot(self.skillBar.vos, self.skillBar.vos_slot)
                         return
                         
                     if IsSkillReadyById(self.skillBar.eremites) and HasEnoughEnergy(self.skillBar.eremites) and GetDistance(player_id, target) <= GameAreas.Nearby:
                         if IsSkillReadyById(self.skillBar.staggering) and HasEnoughEnergy(self.skillBar.staggering):
                             self.soup_killing_staggering_casted = True
-                            CastSkillById(self.skillBar.staggering)
+                            CastSkillByIdAndSlot(self.skillBar.staggering, self.skillBar.staggering_slot)
                             return
                     Player.Interact(target)
         except Exception as e:
@@ -1063,7 +1063,7 @@ class Soup_Farm(ReportsProgress):
     
     # Jump back to output pathing if not done collecting
     def CheckSoupRoutineEnd(self):
-        global soup_selected
+        global soup_selected, soup_exchange
 
         # Don't reset the Soup count
         self.RunEnding()
@@ -1073,7 +1073,10 @@ class Soup_Farm(ReportsProgress):
 
         if not soup_selected:
             self.Log("Not Farming Soup - AutoStop")
-            self.InternalStop()
+            if soup_exchange:
+                self.soup_Routine.jump_to_state_by_name(self.soup_exchange_soup_routine_end)
+            else:
+                self.InternalStop()
             return
         
         if (self.soup_collected / 2) < self.main_item_collect:
@@ -1087,6 +1090,8 @@ class Soup_Farm(ReportsProgress):
                     self.soup_Routine.jump_to_state_by_name(self.soup_inventory_state_name)
                 else:
                     self.soup_Routine.jump_to_state_by_name(self.soup_change_weapon_staff)
+        elif soup_exchange:
+            self.soup_Routine.jump_to_state_by_name(self.soup_exchange_soup_routine_end)
         else:
             self.Log("Soup Count Matched - AutoStop")
             self.InternalStop()
